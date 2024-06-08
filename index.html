@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>파일 업로드 및 시각화</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>파일 업로드</h1>
+    <form id="upload-form" action="http://localhost:8080/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="inputFile" />
+        <button type="submit">업로드</button>
+    </form>
+
+    <h2>파일 업로드 결과</h2>
+    <div>
+        <canvas id="uploadResultChart"></canvas>
+    </div>
+
+    <h1>대규모 데이터 생성</h1>
+    <form id="generate-data-form" action="http://localhost:8080/generate-large-data" method="post">
+        <button type="submit">대규모 데이터 생성</button>
+    </form>
+
+    <h2>대규모 데이터 결과</h2>
+    <div>
+        <canvas id="largeDataResultChart"></canvas>
+    </div>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('http://localhost:8080/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                drawChart('uploadResultChart', data);
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('generate-data-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            fetch('http://localhost:8080/generate-large-data', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                drawChart('largeDataResultChart', data);
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        function drawChart(chartId, data) {
+            const ctx = document.getElementById(chartId).getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['최소값', '최대값', '평균', '표준편차'],
+                    datasets: [{
+                        label: '통계',
+                        data: [data.min, data.max, data.avg, data.stddev],
+                        backgroundColor: ['red', 'blue', 'green', 'purple']
+                    }]
+                }
+            });
+        }
+    </script>
+</body>
+</html>
